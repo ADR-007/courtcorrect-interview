@@ -8,8 +8,6 @@ x-base-backend-dev: &base-backend-dev
   build:
     target: develop
     context: backend
-    ssh:
-      - default
   volumes:
     - ./backend:/app
   env_file:
