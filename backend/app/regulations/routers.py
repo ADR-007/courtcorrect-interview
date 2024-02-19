@@ -19,7 +19,7 @@ router = APIRouter(
 
 
 @router.get(
-    path='',
+    path="",
     response_model=Page[RegulatorySchema],
 )
 async def get_regulations(

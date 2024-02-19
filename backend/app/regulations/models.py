@@ -10,14 +10,14 @@ from app.decisions.models import Decision
 
 
 class Regulatory(Base):
-    __tablename__ = 'regulatories'
+    __tablename__ = "regulatories"
 
     title: Mapped[str]
     description: Mapped[str]
 
-    category_id: Mapped[int] = mapped_column(ForeignKey('categories.id'))
-    company_id: Mapped[int] = mapped_column(ForeignKey('companies.id'))
-    decision_id: Mapped[int] = mapped_column(ForeignKey('decisions.id'))
+    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
+    company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"))
+    decision_id: Mapped[int] = mapped_column(ForeignKey("decisions.id"))
 
     category: Mapped[Category] = relationship()
     company: Mapped[Company] = relationship()

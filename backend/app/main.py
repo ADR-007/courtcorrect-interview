@@ -16,12 +16,12 @@ def make_app() -> FastAPI:
     from app.core.settings import settings
 
     fast_api = FastAPI(
-        title='Courtcorrect Interview',
+        title="Courtcorrect Interview",
         version=settings.VERSION,
         swagger_ui_parameters=dict(
-            docExpansion='none',
-            operationsSorter='alpha',
-            tagsSorter='alpha',
+            docExpansion="none",
+            operationsSorter="alpha",
+            tagsSorter="alpha",
         ),
         debug=settings.DEBUG,
     )
@@ -39,7 +39,7 @@ def make_app() -> FastAPI:
     import app.regulations.routers
     import app.status.routers
 
-    root_router = APIRouter(prefix='/v1')
+    root_router = APIRouter(prefix="/v1")
     root_router.include_router(app.status.routers.router)
     root_router.include_router(app.categories.routers.router)
     root_router.include_router(app.decisions.routers.router)
@@ -66,13 +66,13 @@ def use_route_names_as_operation_ids(fast_api: FastAPI) -> None:
         if isinstance(route, APIRoute):
             operation_id = route.name
             if operation_id in operation_ids:
-                raise ValueError(f'Duplicated operation_id: {operation_id}')
+                raise ValueError(f"Duplicated operation_id: {operation_id}")
             route.operation_id = operation_id
 
 
 app = make_app()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(app)

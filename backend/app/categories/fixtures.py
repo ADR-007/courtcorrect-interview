@@ -8,5 +8,5 @@ from app.categories.models import Category
 @pytest.fixture()
 async def category(db: AsyncSession) -> Category:
     return await CategoryFactory.create(
-        name='Test category',
+        name="Test category",
     )

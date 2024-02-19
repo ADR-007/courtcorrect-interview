@@ -14,11 +14,11 @@ router = APIRouter(
 
 
 @router.get(
-    path='',
+    path="",
     response_model=ListResponse[NamedModelSchema],
 )
 async def get_categories(db: DbSession) -> Any:
     categories = (await db.scalars(select(Category))).all()
     return {
-        'items': categories,
+        "items": categories,
     }

@@ -15,18 +15,19 @@ logger = logging.getLogger(__name__)
 
 # mypy: disable-error-code=assignment
 
+
 class Environment(str, Enum):
-    LOCAL = 'local'
-    TEST = 'test'
-    DEVELOPMENT = 'development'
-    STAGING = 'staging'
-    PRODUCTION = 'production'
+    LOCAL = "local"
+    TEST = "test"
+    DEVELOPMENT = "development"
+    STAGING = "staging"
+    PRODUCTION = "production"
 
 
 class EnvSettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file='.env',
-        extra='ignore',
+        env_file=".env",
+        extra="ignore",
     )
     APP_ENV: Environment
 
@@ -34,12 +35,12 @@ class EnvSettings(BaseSettings):
 class Settings(EnvSettings):
     """Application settings."""
 
-    VERSION: str = '0.0.1'
+    VERSION: str = "0.0.1"
     DEBUG: bool = False
-    LOG_LEVEL: str = 'INFO'
+    LOG_LEVEL: str = "INFO"
 
     DB_URL: SecretStr
-    BACKEND_CORS_ORIGINS: list[str] = ['*']
+    BACKEND_CORS_ORIGINS: list[str] = ["*"]
 
 
 class LocalSettings(Settings):
@@ -53,7 +54,7 @@ class LocalSettings(Settings):
     APP_ENV: Literal[Environment.LOCAL]
 
     DB_URL: SecretStr = SecretStr(
-        'postgresql+asyncpg://postgres:postgres@0.0.0.0:5532/dev',
+        "postgresql+asyncpg://postgres:postgres@0.0.0.0:5532/dev",
     )
 
 
@@ -61,13 +62,13 @@ class TestLocalSettings(LocalSettings):
     """Settings for local testing with default values."""
 
     model_config = SettingsConfigDict(
-        env_file='',  # Do not load .env file for tests
+        env_file="",  # Do not load .env file for tests
     )
 
     APP_ENV: Literal[Environment.TEST]  # type: ignore[assignment]
 
     DB_URL: SecretStr = SecretStr(
-        'postgresql+asyncpg://postgres:postgres@0.0.0.0:5533/test',
+        "postgresql+asyncpg://postgres:postgres@0.0.0.0:5533/test",
     )
 
 
@@ -90,7 +91,7 @@ def get_settings() -> Settings:
         Environment.PRODUCTION: NonLocalSettings,
     }[EnvSettings().APP_ENV]()  # type: ignore[call-arg]
 
-    logger.info(f'Loaded settings: {new_settings.model_dump_json(indent=2)}')
+    logger.info(f"Loaded settings: {new_settings.model_dump_json(indent=2)}")
 
     return new_settings
 

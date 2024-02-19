@@ -16,8 +16,8 @@ async def regulatory(
     decision: Decision,
 ) -> Regulatory:
     return await RegulatoryFactory.create(
-        title='Test regulatory',
-        description='Test description',
+        title="Test regulatory",
+        description="Test description",
         category=category,
         company=company,
         decision=decision,

@@ -6,23 +6,24 @@ from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
 
 pytest_plugins = [
-    'app.categories.fixtures',
-    'app.companies.fixtures',
-    'app.decisions.fixtures',
-    'app.regulations.fixtures',
+    "app.categories.fixtures",
+    "app.companies.fixtures",
+    "app.decisions.fixtures",
+    "app.regulations.fixtures",
 ]
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def anyio_backend() -> str:
     """AnyIO backend configuration for tests."""
-    return 'asyncio'
+    return "asyncio"
 
 
 @pytest.fixture(scope="session", autouse=True)
 def _validate_settings() -> None:
     """Validate settings."""
     from app.core.settings import Environment, settings
+
     assert settings.APP_ENV == Environment.TEST
 
 
@@ -30,6 +31,7 @@ def _validate_settings() -> None:
 def _autodiscover_models() -> None:
     """Autodiscover models."""
     from app.core.utils.discover_models import discover_models
+
     discover_models()
 
 
@@ -38,6 +40,7 @@ async def _cleanup_database_on_startup(anyio_backend: str) -> None:
     """Cleanup database on startup."""
     from app.core.database import async_engine
     from app.core.utils.psqldbcleaner import cleanup_database
+
     await cleanup_database(async_engine)
 
 
@@ -53,19 +56,22 @@ async def _cleanup_database_after_each_class(
         PyTestMainSessionLocal,
         async_engine,
     )
+
     await PyTestMainSessionLocal.remove()
     await PyTestFastApiSessionLocal.remove()
     from app.core.utils.psqldbcleaner import cleanup_database
+
     await cleanup_database(async_engine)
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture(scope="class")
 async def db(
     _cleanup_database_on_startup: None,
     _cleanup_database_after_each_class: None,
 ) -> AsyncIterator[AsyncSession]:
     """Database session."""
     from app.core.database import PyTestMainSessionLocal
+
     async with PyTestMainSessionLocal() as session:
         try:
             yield session
@@ -74,9 +80,10 @@ async def db(
             await session.rollback()
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture(scope="class")
 async def api_db(db: AsyncSession) -> AsyncIterator[AsyncSession]:
     from app.core.database import PyTestFastApiSessionLocal
+
     async with PyTestFastApiSessionLocal() as session:
         try:
             yield session
@@ -101,4 +108,4 @@ async def client(api_db: AsyncSession) -> AsyncIterator[AsyncClient]:
 
 @pytest.fixture()
 def _settings_debug_off(mocker: MockerFixture) -> None:
-    mocker.patch('app.core.settings.settings.DEBUG', False)
+    mocker.patch("app.core.settings.settings.DEBUG", False)

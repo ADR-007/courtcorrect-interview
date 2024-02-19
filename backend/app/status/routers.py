@@ -3,7 +3,7 @@ from typing import Any
 
 from fastapi import APIRouter
 
-router = APIRouter(prefix='/status', tags=['Status'])
+router = APIRouter(prefix="/status", tags=["Status"])
 
 
 @router.get("")

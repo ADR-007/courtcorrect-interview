@@ -35,7 +35,7 @@ async def cleanup_database(
         dirty_tables = await get_filled_tables(connection)
         # Disable Foreign Key checks so that we can delete tables in any order.
         await connection.execute(
-            text('SET session_replication_role = replica;'),
+            text("SET session_replication_role = replica;"),
         )
 
         for dirty_table, dirty_schemas in dirty_tables.items():
@@ -56,7 +56,7 @@ async def cleanup_database(
                 )
 
         await connection.execute(
-            text('SET session_replication_role = origin;'),
+            text("SET session_replication_role = origin;"),
         )
         await connection.commit()
 

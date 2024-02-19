@@ -8,5 +8,5 @@ from app.companies.models import Company
 @pytest.fixture()
 async def company(db: AsyncSession) -> Company:
     return await CompanyFactory.create(
-        name='Test company',
+        name="Test company",
     )

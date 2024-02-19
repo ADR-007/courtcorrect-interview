@@ -8,5 +8,5 @@ from app.decisions.models import Decision
 @pytest.fixture()
 async def decision(db: AsyncSession) -> Decision:
     return await DecisionFactory.create(
-        name='Test decision',
+        name="Test decision",
     )
