@@ -20,7 +20,7 @@ jobs:
       - name: Build
         run: |
           # Create .env file to avoid error from docker compose
-          echo IMAGE_TAG=ci > .env
+          echo IMAGE_TAG=ci > backend/.env
           DOCKER_BUILDKIT=1 BUILDKIT_INLINE_CACHE=1 docker compose --profile backend pull --ignore-buildable
           DOCKER_BUILDKIT=1 BUILDKIT_INLINE_CACHE=1 docker compose --profile backend build --progress=plain
 
@@ -68,8 +68,6 @@ jobs:
 
       - name: Build
         run: |
-          # Create .env file to avoid error from docker compose
-          echo IMAGE_TAG=ci > .env
           DOCKER_BUILDKIT=1 BUILDKIT_INLINE_CACHE=1 docker compose --profile frontend pull --ignore-buildable
           DOCKER_BUILDKIT=1 BUILDKIT_INLINE_CACHE=1 docker compose --profile frontend build --progress=plain
 
