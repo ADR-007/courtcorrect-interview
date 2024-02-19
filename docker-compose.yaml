@@ -1,0 +1,150 @@
+version: "3.8"
+
+x-base-backend-dev: &base-backend-dev
+  profiles:
+    - dev
+    - backend
+  image: courtcorrect-interview-dev:${IMAGE_TAG:-local}
+  build:
+    target: develop
+    context: backend
+    ssh:
+      - default
+  volumes:
+    - ./backend:/app
+  env_file:
+    - backend/.env
+  environment: &base-backend-env
+    APP_ENV: local
+    DB_URL: postgresql+asyncpg://postgres:postgres@db-dev:5432/dev
+
+x-base-backend-test: &base-backend-test
+  profiles:
+    - test
+    - backend
+  <<: *base-backend-dev
+  env_file: [ ]
+  environment:
+    <<: *base-backend-env
+    APP_ENV: test
+    DB_URL: postgresql+asyncpg://postgres:postgres@db-test:5432/test
+
+x-base-db: &base-db
+  image: postgres:14.7-alpine
+  environment: &base-db-env
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+    POSTGRES_DB: dev
+  healthcheck:
+    test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+    interval: 1s
+    timeout: 5s
+    retries: 10
+
+x-base-frontend-dev: &base-frontend-dev
+  image: courtcorrect-interview-frontend-dev
+  build:
+    context: frontend/
+    target: development
+
+services:
+  db-dev:
+    profiles:
+      - dev
+      - backend
+    <<: *base-db
+    ports:
+      - "5532:5432"
+
+  db-dev-migration:
+    <<: *base-backend-dev
+    command: [ "make", "db-migrate" ]
+    depends_on:
+      db-dev:
+        condition: service_healthy
+
+  db-dev-populate:
+    <<: *base-backend-dev
+    command: [ "make", "populate-db" ]
+    depends_on:
+      db-dev:
+        condition: service_healthy
+      db-dev-migration:
+        condition: service_completed_successfully
+
+  api-dev:
+    # Development image
+    <<: *base-backend-dev
+    ports:
+      - "8000:8000"
+    command: [ "make", "run-api" ]
+    depends_on:
+      db-dev:
+        condition: service_healthy
+      db-dev-migration:
+        condition: service_completed_successfully
+    environment:
+      <<: *base-backend-env
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --fail http://localhost:8000/v1/status || exit 1" ]
+
+  db-test:
+    profiles:
+      - test
+      - backend
+    <<: *base-db
+    environment:
+      <<: *base-db-env
+      POSTGRES_DB: test
+    ports:
+      - "5533:5432"
+
+  db-test-migration:
+    <<: *base-backend-test
+    command: [ "make", "db-migrate" ]
+    depends_on:
+      db-test:
+        condition: service_healthy
+
+  api-lint:
+    profiles:
+      - lint
+      - backend
+    <<: *base-backend-test
+    command: [ 'make', 'lint' ]
+
+  api-test: &api-test
+    <<: *base-backend-test
+    command: [ 'make', 'test' ]
+    depends_on:
+      db-test:
+        condition: service_healthy
+      db-test-migration:
+        condition: service_completed_successfully
+
+  api-test-cov:
+    <<: *api-test
+    command: [ 'make', 'test-cov' ]
+    volumes:
+      - ./reports:/app/reports:wr
+
+  ui-dev:
+    profiles:
+      - dev
+      - frontend
+    <<: *base-frontend-dev
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: http://localhost:8000
+    volumes:
+      - ./frontend:/app
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --fail http://localhost:3000 || exit 1" ]
+
+  ui-lint:
+    profiles:
+      - lint
+      - frontend
+    <<: *base-frontend-dev
+    entrypoint: [ 'yarn', 'lint' ]
