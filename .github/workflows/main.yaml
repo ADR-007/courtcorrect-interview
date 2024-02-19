@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  lint-and-test-backend:
+    name: 'Backend: lint and test'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          # Create .env file to avoid error from docker compose
+          echo IMAGE_TAG=ci > .env
+          DOCKER_BUILDKIT=1 BUILDKIT_INLINE_CACHE=1 docker compose --profile backend pull --ignore-buildable
+          DOCKER_BUILDKIT=1 BUILDKIT_INLINE_CACHE=1 docker compose --profile backend build --progress=plain
+
+      - name: Lint
+        run: docker compose up api-lint --exit-code-from api-lint
+
+      - name: Test
+        run: docker compose up api-test-cov --exit-code-from api-test-cov
+
+      - name: Produce the coverage report
+        uses: insightsengineering/coverage-action@v2
+        with:
+          # Path to the Cobertura XML report.
+          path: ./reports/coverage.xml
+          # Minimum total coverage, if you want to the
+          # workflow to enforce it as a standard.
+          # This has no effect if the `fail` arg is set to `false`.
+          threshold: 95
+          # Fail the workflow if the minimum code coverage
+          # reuqirements are not satisfied.
+          fail: true
+          # Publish the rendered output as a PR comment
+          publish: true
+          # Create a coverage diff report.
+          diff: true
+          # Branch to diff against.
+          # Compare the current coverage to the coverage
+          # determined on this branch.
+          diff-branch: dev
+          # This is where the coverage reports for the
+          # `diff-branch` are stored.
+          # Branch is created if it doesn't already exist'.
+          diff-storage: _xml_coverage_reports
+          # Fail the action if any new uncovered statements are introduced compared to the diff-branch.
+          coverage-reduction-failure: true
+
+          togglable-report: true
+
+  lint-and-test-frontend:
+    name: 'Frontend: lint'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          # Create .env file to avoid error from docker compose
+          echo IMAGE_TAG=ci > .env
+          DOCKER_BUILDKIT=1 BUILDKIT_INLINE_CACHE=1 docker compose --profile frontend pull --ignore-buildable
+          DOCKER_BUILDKIT=1 BUILDKIT_INLINE_CACHE=1 docker compose --profile frontend build --progress=plain
+
+      - name: Lint
+        run: docker compose up ui-lint --exit-code-from ui-lint
