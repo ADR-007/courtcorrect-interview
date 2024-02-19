@@ -11,7 +11,7 @@ on:
 
 jobs:
   lint-and-test-backend:
-    name: 'Backend: lint and test'
+    name: 'Backend: lint, test, coverage'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -21,8 +21,8 @@ jobs:
         run: |
           # Create .env file to avoid error from docker compose
           echo IMAGE_TAG=ci > backend/.env
-          DOCKER_BUILDKIT=1 BUILDKIT_INLINE_CACHE=1 docker compose --profile backend pull --ignore-buildable
-          DOCKER_BUILDKIT=1 BUILDKIT_INLINE_CACHE=1 docker compose --profile backend build --progress=plain
+          DOCKER_BUILDKIT=1 docker compose --profile backend --progress=plain pull --ignore-buildable
+          DOCKER_BUILDKIT=1 docker compose --profile backend --progress=plain build
 
       - name: Lint
         run: docker compose up api-lint --exit-code-from api-lint
@@ -68,8 +68,8 @@ jobs:
 
       - name: Build
         run: |
-          DOCKER_BUILDKIT=1 BUILDKIT_INLINE_CACHE=1 docker compose --profile frontend pull --ignore-buildable
-          DOCKER_BUILDKIT=1 BUILDKIT_INLINE_CACHE=1 docker compose --profile frontend build --progress=plain
+          DOCKER_BUILDKIT=1 docker compose --profile frontend --progress=plain pull --ignore-buildable
+          DOCKER_BUILDKIT=1 docker compose --profile frontend --progress=plain build
 
       - name: Lint
         run: docker compose up ui-lint --exit-code-from ui-lint

@@ -33,14 +33,13 @@ RUN apt-get update \
     && python3 -m venv $VIRTUAL_ENV
 
 COPY poetry.lock pyproject.toml ./
-RUN --mount=type=ssh ssh-keyscan github.com > /etc/ssh/ssh_known_hosts
-RUN --mount=type=ssh poetry install --only main --no-root --sync
+RUN poetry install --only main --no-root --sync
 
 
 # Create builder for develop stage
 FROM builder AS builder-dev
 
-RUN --mount=type=ssh poetry install --no-root --sync
+RUN poetry install --no-root --sync
 
 
 # Create develop stage
