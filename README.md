@@ -14,7 +14,8 @@ provided in Figma. You can find the design link below.
   when clicked suffice. The focus should be on implementing the paginated list of results and filters as seen in the
   design.
 
-PDF version of the design: [design.pdf](./design.pdf)
+PDF version of the design: [Test Assignment 2024.pdf](https://github.com/ADR-007/courtcorrect-interview/files/14331893/Test.Assignment.2024.pdf)
+
 
 ## Implementation
 
@@ -30,7 +31,7 @@ PDF version of the design: [design.pdf](./design.pdf)
         - Pytest
         - Docker
     - Features
-        - Basic endpoint to fetch paginated list of results
+        - Basic endpoint to fetch a paginated list of results with filters
 - Frontend
     - Stack
         - TypeScript
@@ -38,12 +39,18 @@ PDF version of the design: [design.pdf](./design.pdf)
         - React
         - React-query
         - openapi-react-query-codegen
+    - TBD:
+      - Tests
     - Features
-        - Search page with paginated list of results
+        - Search page with a paginated list of results
 
 ## Screen recording
 
-TBD
+
+
+[![Screenshot](./docs/screenshot.png)](https://github.com/ADR-007/courtcorrect-interview/assets/7348960/bf0f370b-afc6-4ba7-aa7a-f6643cd96c4e)
+
+
 
 ## How to run locally
 
