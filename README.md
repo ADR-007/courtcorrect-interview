@@ -1,5 +1,5 @@
 ![CI](https://github.com/ADR-007/courtcorrect-interview/actions/workflows/main.yaml/badge.svg)
-
+![BE Coverage](https://raw.githubusercontent.com/ADR-007/courtcorrect-interview/_xml_coverage_reports/data/main/./badge.svg)
 # Full Stack interview task
 
 Search page with paginated list of results and filters. Made to showcase my skills in full-stack development.
