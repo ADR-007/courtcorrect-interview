@@ -42,6 +42,7 @@ PDF version of the design: [Test Assignment 2024.pdf](https://github.com/ADR-007
         - React-query
         - openapi-react-query-codegen
     - TBD:
+      - Error handling
       - Tests
     - Features
         - Search page with a paginated list of results
