@@ -1,46 +1,50 @@
 import { Button, Stack, TextField } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import { DatePicker } from '@mui/x-date-pickers';
-import React, { useEffect, useState } from 'react';
+import { Dayjs } from 'dayjs';
+import React from 'react';
 
 import {
   useCategoriesServiceGetCategories,
   useCompaniesServiceGetCompanies,
   useDecisionsServiceGetDecisions,
 } from '../../../api/queries';
-import { NamedModelSchema } from '../../../api/requests';
-
-export type FilterItem = NamedModelSchema | null;
+import { ListResponse_NamedModelSchema_ } from '../../../api/requests';
 
 export type SelectedFilterValues = {
-  category: FilterItem;
-  decision: FilterItem;
-  company: FilterItem;
-  publishDate: Date | null;
+  categoryId: number | null;
+  decisionId: number | null;
+  companyId: number | null;
+  publishDate: Dayjs | null;
 };
 
 
 export interface FiltersRowProps {
+  selectedFilterValues: SelectedFilterValues | undefined;
   onSelectionChange: (values: SelectedFilterValues) => void;
 };
 
-const FiltersRow = ({ onSelectionChange }: FiltersRowProps) => {
+const FiltersRow = (props: FiltersRowProps) => {
+  const { onSelectionChange, selectedFilterValues: nullableFilterValues } = props;
+  const selectedFilterValues = nullableFilterValues || {
+    categoryId: null,
+    decisionId: null,
+    companyId: null,
+    publishDate: null,
+  };
   const { data: categories } = useCategoriesServiceGetCategories();
   const { data: decisions } = useDecisionsServiceGetDecisions();
   const { data: companies } = useCompaniesServiceGetCompanies();
-  const [selectedCategory, setSelectedCategory] = useState<FilterItem>(null);
-  const [selectedDecision, setSelectedDecision] = useState<FilterItem>(null);
-  const [selectedCompany, setSelectedCompany] = useState<FilterItem>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  useEffect(() => {
+  const findById = (id: number | null, response: ListResponse_NamedModelSchema_ | undefined) => (
+    response?.items.find((item) => item.id === id) || null
+  );
+  const handleSearchChange = (newValues: Partial<SelectedFilterValues>) => {
     onSelectionChange({
-      category: selectedCategory,
-      decision: selectedDecision,
-      company: selectedCompany,
-      publishDate: selectedDate,
+      ...selectedFilterValues,
+      ...newValues,
     });
-  }, [selectedCategory, selectedDecision, selectedCompany, selectedDate, onSelectionChange]);
+  }
 
   return (
     <Stack alignItems="center" spacing={4} marginTop={4}>
@@ -53,9 +57,9 @@ const FiltersRow = ({ onSelectionChange }: FiltersRowProps) => {
           fullWidth
           options={categories?.items || []}
           getOptionLabel={(option) => option.name}
-          value={selectedCategory}
+          value={findById(selectedFilterValues.categoryId, categories)}
           onChange={(event, newValue) => {
-            setSelectedCategory(newValue);
+            handleSearchChange({ categoryId: newValue?.id || null });
           }}
           renderInput={(params) => <TextField {...params} variant="outlined" label="Category" fullWidth />}
         />
@@ -64,9 +68,9 @@ const FiltersRow = ({ onSelectionChange }: FiltersRowProps) => {
           fullWidth
           options={decisions?.items || []}
           getOptionLabel={(option) => option.name}
-          value={selectedDecision}
+          value={findById(selectedFilterValues.decisionId, decisions)}
           onChange={(event, newValue) => {
-            setSelectedDecision(newValue);
+            handleSearchChange({ decisionId: newValue?.id || null });
           }}
           renderInput={(params) => <TextField {...params} variant="outlined" label="Decision" fullWidth />}
         />
@@ -76,18 +80,18 @@ const FiltersRow = ({ onSelectionChange }: FiltersRowProps) => {
           fullWidth
           options={companies?.items || []}
           getOptionLabel={(option) => option.name}
-          value={selectedCompany}
+          value={findById(selectedFilterValues.companyId, companies)}
           onChange={(event, newValue) => {
-            setSelectedCompany(newValue);
+            handleSearchChange({ companyId: newValue?.id || null });
           }}
           renderInput={(params) => <TextField {...params} variant="outlined" label="Company" fullWidth />}
         />
         <DatePicker
           sx={{ width: '100%' }}
           label="Date"
-          value={selectedDate}
-          onChange={(newValue: Date | null) => {
-            setSelectedDate(newValue);
+          value={selectedFilterValues.publishDate}
+          onChange={(newValue: Dayjs | null) => {
+            handleSearchChange({ publishDate: newValue });
           }}
           slotProps={{
             actionBar: {
@@ -100,10 +104,12 @@ const FiltersRow = ({ onSelectionChange }: FiltersRowProps) => {
         variant="text"
         sx={{ height: 'auto' }}
         onClick={() => {
-          setSelectedCategory(null);
-          setSelectedDecision(null);
-          setSelectedCompany(null);
-          setSelectedDate(null);
+          handleSearchChange({
+            categoryId: null,
+            decisionId: null,
+            companyId: null,
+            publishDate: null,
+          });
         }}
       >
         Clear Filters
