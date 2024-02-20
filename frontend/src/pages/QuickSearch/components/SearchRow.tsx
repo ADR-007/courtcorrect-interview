@@ -1,19 +1,23 @@
 import SearchIcon from '@mui/icons-material/Search';
 import { Box, Button, InputAdornment, Stack, TextField } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export interface SearchRowProps {
+  searchValue: string;
   onSearchChange: (search: string) => void;
 }
 
 
 const SearchRow = (props: SearchRowProps) => {
-  const { onSearchChange } = props;
-  const [searchValue, setSearchValue] = useState<string>('');
+  const { onSearchChange, searchValue } = props;
+  const [newSearchValue, setNewSearchValue] = useState<string>('');
 
   const handleSearchChange = () => {
-    onSearchChange(searchValue);
+    onSearchChange(newSearchValue);
   };
+  useEffect(() => {
+    setNewSearchValue(searchValue);
+  }, [searchValue]);
 
   return (
     <Stack
@@ -35,8 +39,8 @@ const SearchRow = (props: SearchRowProps) => {
               </InputAdornment>
             ),
           }}
-          value={searchValue}
-          onChange={(event) => setSearchValue(event.target.value)}
+          value={newSearchValue}
+          onChange={(event) => setNewSearchValue(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
               handleSearchChange();
@@ -50,7 +54,7 @@ const SearchRow = (props: SearchRowProps) => {
         variant="contained"
         color="primary"
         onClick={handleSearchChange}
-        disabled={!searchValue}
+        disabled={!newSearchValue}
         fullWidth
       >
         Search

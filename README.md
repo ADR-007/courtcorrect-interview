@@ -46,6 +46,7 @@ PDF version of the design: [Test Assignment 2024.pdf](https://github.com/ADR-007
       - Tests
     - Features
         - Search page with a paginated list of results
+        - Store query parameters in the URL
 
 ## Screen recording
 

@@ -186,11 +186,11 @@ export const theme = createTheme({
             backgroundColor: 'transparent',
           },
           // set border for first item only
-          '& li:last-child .MuiPaginationItem-previousNext': {
+          '& li:last-of-type .MuiPaginationItem-previousNext': {
             borderRadius: '0 4px 4px 0',
             border: `1px solid ${colors.borderDefault}`,
           },
-          '& li:first-child .MuiPaginationItem-previousNext': {
+          '& li:first-of-type .MuiPaginationItem-previousNext': {
             borderRadius: '4px 0 0 4px',
             border: `1px solid ${colors.borderDefault}`,
           },

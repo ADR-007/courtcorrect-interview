@@ -1,6 +1,8 @@
 import { Box, Pagination, Typography } from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import FiltersRow, { SelectedFilterValues } from './components/FiltersRow';
 import PaginationHeader, { PaginationOptions } from './components/PaginationHeader';
@@ -9,29 +11,44 @@ import SearchRow from './components/SearchRow';
 
 import { useRegulationsServiceGetRegulations, useRegulationsServiceGetRegulationsKey } from '../../api/queries';
 import { Page_RegulatorySchema_ } from '../../api/requests';
-// component
 
+type SearchQueryParams = SelectedFilterValues & PaginationOptions & { page: number, search: string };
 const QuickSearch = () => {
-  const [filtersValues, setFiltersValues] = useState<SelectedFilterValues>();
-  const [paginationOptions, setPaginationOptions] = useState<PaginationOptions>({
-    pageSize: 5,
-    sortBy: '-publish_date',
-  });
-  const [page, setPage] = useState<number>(1);
-  const [searchValue, setSearchValue] = useState<string>('');
+  const [searchParams, setSearchParams] = useSearchParams(new URLSearchParams());
+  const searchParamsValues: SearchQueryParams = {
+    categoryId: searchParams.get('categoryId') ? parseInt(searchParams.get('categoryId') as string, 10) : null,
+    companyId: searchParams.get('companyId') ? parseInt(searchParams.get('companyId') as string, 10) : null,
+    decisionId: searchParams.get('decisionId') ? parseInt(searchParams.get('decisionId') as string, 10) : null,
+    publishDate: searchParams.get('publishDate') ? dayjs(searchParams.get('publishDate') as string) : null,
+    page: searchParams.get('page') ? parseInt(searchParams.get('page') as string, 10) : 1,
+    search: searchParams.get('search') || '',
+    size: searchParams.get('size') ? parseInt(searchParams.get('size') as string, 10) : 5,
+    sortBy: searchParams.get('sortBy') || '-publish_date',
+  };
+  const updateFilter = useCallback((values: Partial<SearchQueryParams>) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    Object.entries(values).forEach(([key, value]) => {
+      if (value) {
+        if (key === 'publishDate') {
+          newSearchParams.set(key, (value as dayjs.Dayjs)?.format('YYYY-MM-DD'));
+        } else {
+          newSearchParams.set(key, value.toString());
+        }
+      } else {
+        newSearchParams.delete(key);
+      }
+    });
+    setSearchParams(newSearchParams);
+  }, [searchParams, setSearchParams]);
+
   const queryClient = useQueryClient();
-  const { data, isLoading } = useRegulationsServiceGetRegulations({
-    orderBy: paginationOptions?.sortBy,
-    page: page || 1,
-    size: paginationOptions?.pageSize,
-    search: searchValue,
-    categoryId: filtersValues?.category?.id,
-    companyId: filtersValues?.company?.id,
-    decisionId: filtersValues?.decision?.id,
-    publishDate: filtersValues?.publishDate?.toISOString().split('T')[0],
-  }, undefined, {
-    enabled: searchValue !== '',
-  });
+  const { data, isLoading } = useRegulationsServiceGetRegulations(
+    { ...searchParamsValues, publishDate: searchParamsValues.publishDate?.format('YYYY-MM-DD') },
+    undefined,
+    { enabled: searchParamsValues.search !== '' },
+  );
+
+  // Store the data while loading to avoid flickering
   const [storedData, setStoredData] = useState<Page_RegulatorySchema_ | undefined>();
   useEffect(() => {
     if (!isLoading) {
@@ -42,13 +59,13 @@ const QuickSearch = () => {
   const handleSearchChange = useCallback(async (newSearchValue: string) => {
     // Invalidate the query to trigger a new fetch
     await queryClient.invalidateQueries([useRegulationsServiceGetRegulationsKey]);
-    setSearchValue(newSearchValue);
-  }, [queryClient]);
+    updateFilter({ search: newSearchValue, page: 1 });
+  }, [queryClient, updateFilter]);
 
   const handlePaginationChange = useCallback(async (options: PaginationOptions) => {
-    setPage(1);
-    setPaginationOptions(options);
-  }, []);
+    updateFilter({ page: 1, ...options });
+  }, [updateFilter]);
+
 
   return (
     <Box>
@@ -59,12 +76,18 @@ const QuickSearch = () => {
         Use the search engine to search for publications from courts and regulators.
       </Typography>
 
-      <SearchRow onSearchChange={handleSearchChange} />
-      <FiltersRow onSelectionChange={setFiltersValues} />
+      <SearchRow
+        searchValue={searchParamsValues.search} onSearchChange={handleSearchChange}
+      />
+      <FiltersRow
+        selectedFilterValues={searchParamsValues}
+        onSelectionChange={updateFilter}
+      />
       <PaginationHeader
+        paginationOptions={searchParamsValues}
         onPaginationChange={handlePaginationChange}
         displayPage={(storedData?.page || 1)}
-        displayPageSize={storedData?.size || 0}
+        displaySize={storedData?.size || 0}
         displayItems={storedData?.items.length || 0}
         displayTotal={storedData?.total || 0}
       />
@@ -73,8 +96,8 @@ const QuickSearch = () => {
       <Box justifyContent="center" display="flex" marginTop={4}>
         <Pagination
           count={storedData?.pages || 0}
-          page={page}
-          onChange={(event, value) => setPage(value)}
+          page={searchParamsValues.page}
+          onChange={(event, value) => updateFilter({ page: value })}
         />
       </Box>
     </Box>

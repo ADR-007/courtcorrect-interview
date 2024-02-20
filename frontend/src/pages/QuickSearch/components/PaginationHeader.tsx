@@ -1,33 +1,44 @@
 import { FormControl, InputLabel, MenuItem, Select, Stack } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 export type PaginationOptions = {
-  pageSize: number;
+  size: number;
   sortBy: string;
 }
 
 export interface PaginationHeaderProps {
+  paginationOptions: PaginationOptions | undefined;
   onPaginationChange?: (options: PaginationOptions) => void;
   displayPage: number;
-  displayPageSize: number;
+  displaySize: number;
   displayItems: number;
   displayTotal: number;
 }
 
 
 const PaginationHeader = (props: PaginationHeaderProps) => {
-  const { onPaginationChange, displayPage, displayPageSize, displayItems, displayTotal } = props;
-  const [pageSize, setPageSize] = React.useState(5);
-  const [sortBy, setSortBy] = React.useState<string>('-publish_date');
+  const {
+    paginationOptions: nullablePaginationOptions,
+    onPaginationChange,
+    displayPage,
+    displaySize,
+    displayItems,
+    displayTotal,
+  } = props;
+  const paginationOptions = nullablePaginationOptions || {
+    size: 5,
+    sortBy: '-publish_date',
+  };
 
-  useEffect(() => {
-    if (onPaginationChange) {
-      onPaginationChange({ pageSize, sortBy });
-    }
-  }, [onPaginationChange, pageSize, sortBy]);
+  const handlePaginationChange = (options: Partial<PaginationOptions>) => {
+    onPaginationChange?.({
+      ...paginationOptions,
+      ...options,
+    });
+  };
 
-  const displayPageStart = (displayPage - 1) * displayPageSize;
+  const displayPageStart = (displayPage - 1) * displaySize;
   return (
     <Stack
       direction="row"
@@ -47,11 +58,10 @@ const PaginationHeader = (props: PaginationHeaderProps) => {
       <Stack direction="row" spacing={2}>
         <Select
           sx={{ width: '109px' }}
-          defaultValue={pageSize}
-          onChange={(event) => {
-            setPageSize(event.target.value as number);
-          }}
-          value={pageSize}
+          onChange={(event) => (
+            handlePaginationChange({ size: event.target.value as number })
+          )}
+          value={paginationOptions.size}
         >
           <MenuItem value={5}>5</MenuItem>
           <MenuItem value={10}>10</MenuItem>
@@ -63,10 +73,10 @@ const PaginationHeader = (props: PaginationHeaderProps) => {
             id="select-sort-by"
             label="Sort By"
             sx={{ width: '193px' }}
-            onChange={(event) => {
-              setSortBy(event.target.value as string);
-            }}
-            value={sortBy}
+            onChange={(event) => (
+              handlePaginationChange({ sortBy: event.target.value as string })
+            )}
+            value={paginationOptions.sortBy}
           >
             <MenuItem value="publish_date">Date: Earliest First</MenuItem>
             <MenuItem value="-publish_date">Date: Latest First</MenuItem>
